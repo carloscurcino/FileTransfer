@@ -1,0 +1,42 @@
+Dupla: Heitor Barreto e  Carlos Curcino
+Exercício 13: Decodificador de código gray para hexadecimal
+
+
+Neste decodificador, as entradas são representadas por E0, E1, E2 e E3, onde E0 é o bit menos significativo e E3 é o mais significativo. As saídas são dígitos hexadecimais de 0 a F. Para determinar a saída correspondente com base nas entradas, utiliza-se uma tabela de verdade. Essa tabela associa cada combinação de entradas a um dígito hexadecimal específico. Por exemplo, se as entradas forem E0=0, E1=0, E2=0 e E3=1, a saída será 1, que é o dígito hexadecimal correspondente a essa combinação de entradas.
+
+
+E0	E1	E2	E3 | 0	1	2	3	4	5	6	7	8	9	A	B	C	D	E	F
+0	0	0	0  | 1	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+0	0	0	1  | 0	1	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+0	0	1	1  | 0	0	1	0	0	0	0	0	0	0	0	0	0	0	0	0
+0	0	1	0  | 0	0	0	1	0	0	0	0	0	0	0	0	0	0	0	0
+0	1	1	0  | 0	0	0	0	1	0	0	0	0	0	0	0	0	0	0	0
+0	1	1	1  | 0	0	0	0	0	1	0	0	0	0	0	0	0	0	0	0
+0	1	0	1  | 0	0	0	0	0	0	1	0	0	0	0	0	0	0	0	0
+0	1	0	0  | 0	0	0	0	0	0	0	1	0	0	0	0	0	0	0	0
+1	1	0	0  | 0	0	0	0	0	0	0	0	1	0	0	0	0	0	0	0
+1	1	0	1  | 0	0	0	0	0	0	0	0	0	1	0	0	0	0	0	0
+1	1	1	1  | 0	0	0	0	0	0	0	0	0	0	1	0	0	0	0	0
+1	1	1	0  | 0	0	0	0	0	0	0	0	0	0	0	1	0	0	0	0
+1	0	1	0  | 0	0	0	0	0	0	0	0	0	0	0	0	1	0	0	0
+1	0	1	1  | 0	0	0	0	0	0	0	0	0	0	0	0	0	1	0	0
+1	0	0	1  | 0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	0
+1	0	0	0  | 0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1
+
+
+0	= !E0 * !E1 * !E2 * !E3
+1	= !E0 * !E1 * !E2 * E3
+2	= !E0 * !E1 * E2 * E3
+3	= !E0 * !E1 * E2 * !E3
+4	= !E0 * E1 * E2 * !E3
+5	= !E0 * E1 * E2 * E3
+6	= !E0 * E1 * !E2 * E3
+7	= !E0 * E1 * !E2 * !E3
+8	= E0 * E1 * !E2 * !E3
+9	= E0 * E1 * !E2 * E3
+A	= E0 * E1 * E2 * E3
+B	= E0 * E1 * E2 * !E3
+C	= E0 * !E1 * E2 * !E3
+D	= E0 * !E1 * E2 * E3
+E	= E0 * !E1 * !E2 * E3
+F	= E0 * !E1 * !E2 * !E3
