@@ -98,7 +98,7 @@ public class FileClient {
 
                     if (returnVal == JFileChooser.APPROVE_OPTION) {
                         File savedFile = fileChooser.getSelectedFile();
-                        try (BufferedOutputStream fileOut = new BufferedOutputStream(new FileOutputStream(savedFile))) {
+                        try (OutputStream fileOut = new FileOutputStream(savedFile)) {
                             byte[] buffer = new byte[1024];
                             int bytesRead;
                             while ((bytesRead = in.read(buffer)) != -1) {

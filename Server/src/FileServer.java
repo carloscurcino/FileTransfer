@@ -43,7 +43,7 @@ public class FileServer {
                         File file = new File(FILE_DIRECTORY + fileName);
                         if (file.exists()) {
                             out.writeObject("exists");
-                            try (BufferedInputStream fileIn = new BufferedInputStream(new FileInputStream(file))) {
+                            try (InputStream fileIn = new FileInputStream(file)) {
                                 byte[] buffer = new byte[1024];
                                 int bytesRead;
                                 while ((bytesRead = fileIn.read(buffer)) != -1) {
@@ -55,8 +55,7 @@ public class FileServer {
                         }
                     } else if (command.equals("upload")) {
                         String fileName = (String) in.readObject();
-                        try (BufferedOutputStream fileOut = new BufferedOutputStream(
-                                new FileOutputStream(FILE_DIRECTORY + fileName))) {
+                        try (OutputStream fileOut = new FileOutputStream(FILE_DIRECTORY + fileName)) {
                             byte[] buffer = new byte[1024];
                             int bytesRead;
                             while ((bytesRead = in.read(buffer)) != -1) {
