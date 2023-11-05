@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.List;
 
 public class FileClient {
@@ -11,8 +12,8 @@ public class FileClient {
     private static final int SERVER_PORT = 12345;
 
     private static Socket socket;
-    private static ObjectInputStream in;
-    private static ObjectOutputStream out;
+    private static DataInputStream in;
+    private static DataOutputStream out;
 
     private static JList<String> fileList;
     private static DefaultListModel<String> listModel;
@@ -20,8 +21,8 @@ public class FileClient {
     public static void main(String[] args) {
         try {
             socket = new Socket(SERVER_HOST, SERVER_PORT);
-            out = new ObjectOutputStream(socket.getOutputStream());
-            in = new ObjectInputStream(socket.getInputStream());
+            out = new DataOutputStream(socket.getOutputStream());
+            in = new DataInputStream(socket.getInputStream());
 
             JFrame frame = new JFrame("File Client");
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -72,13 +73,18 @@ public class FileClient {
 
     private static void listFiles() {
         try {
-            out.writeObject("list");
-            String[] files = (String[]) in.readObject();
+            out.writeUTF("list");
+            int numFiles = in.readInt();
+            List<String> files = new ArrayList<>();
+            for (int i = 0; i < numFiles; i++) {
+                String fileName = in.readUTF();
+                files.add(fileName);
+            }
             listModel.clear();
             for (String file : files) {
                 listModel.addElement(file);
             }
-        } catch (IOException | ClassNotFoundException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -87,10 +93,10 @@ public class FileClient {
         String selectedFile = fileList.getSelectedValue();
         if (selectedFile != null) {
             try {
-                out.writeObject("download");
-                out.writeObject(selectedFile);
+                out.writeUTF("download");
+                out.writeUTF(selectedFile);
 
-                String response = (String) in.readObject();
+                String response = in.readUTF();
                 if (response.equals("exists")) {
                     JFileChooser fileChooser = new JFileChooser();
                     fileChooser.setSelectedFile(new File(selectedFile));
@@ -99,10 +105,17 @@ public class FileClient {
                     if (returnVal == JFileChooser.APPROVE_OPTION) {
                         File savedFile = fileChooser.getSelectedFile();
                         try (OutputStream fileOut = new FileOutputStream(savedFile)) {
+                            long fileSize = in.readLong();
                             byte[] buffer = new byte[1024];
                             int bytesRead;
-                            while ((bytesRead = in.read(buffer)) != -1) {
+                            long totalBytesRead = 0;
+                            while (totalBytesRead < fileSize) {
+                                bytesRead = in.read(buffer, 0, (int) Math.min(1024, fileSize - totalBytesRead));
+                                if (bytesRead == -1) {
+                                    break;
+                                }
                                 fileOut.write(buffer, 0, bytesRead);
+                                totalBytesRead += bytesRead;
                             }
                         }
                         JOptionPane.showMessageDialog(null, "File downloaded successfully.");
@@ -110,7 +123,7 @@ public class FileClient {
                 } else if (response.equals("not_found")) {
                     JOptionPane.showMessageDialog(null, "File not found on the server.");
                 }
-            } catch (IOException | ClassNotFoundException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
@@ -122,8 +135,8 @@ public class FileClient {
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             File selectedFile = fileChooser.getSelectedFile();
             try {
-                out.writeObject("upload");
-                out.writeObject(selectedFile.getName());
+                out.writeUTF("upload");
+                out.writeUTF(selectedFile.getName());
 
                 try (BufferedInputStream fileIn = new BufferedInputStream(new FileInputStream(selectedFile))) {
                     byte[] buffer = new byte[1024];
@@ -133,12 +146,11 @@ public class FileClient {
                     }
                 }
                 // Indique o término do envio de arquivo
-                out.writeObject("end");
+                out.writeLong(-1); // -1 para indicar o fim do arquivo
                 JOptionPane.showMessageDialog(null, "File uploaded successfully.");
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
-
 }

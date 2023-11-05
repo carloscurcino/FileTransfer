@@ -30,20 +30,25 @@ public class FileServer {
 
         @Override
         public void run() {
-            try (ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
-                    ObjectOutputStream out = new ObjectOutputStream(clientSocket.getOutputStream())) {
+            try (DataInputStream in = new DataInputStream(clientSocket.getInputStream());
+                    DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream())) {
                 while (true) {
-                    String command = (String) in.readObject();
+                    String command = in.readUTF();
                     if (command.equals("list")) {
                         File dir = new File(FILE_DIRECTORY);
                         String[] files = dir.list();
-                        out.writeObject(files);
+                        out.writeInt(files.length);
+                        for (String fileName : files) {
+                            out.writeUTF(fileName);
+                        }
                     } else if (command.equals("download")) {
-                        String fileName = (String) in.readObject();
+                        String fileName = in.readUTF();
                         File file = new File(FILE_DIRECTORY + fileName);
                         if (file.exists()) {
-                            out.writeObject("exists");
+                            out.writeUTF("exists");
                             try (InputStream fileIn = new FileInputStream(file)) {
+                                long fileSize = file.length();
+                                out.writeLong(fileSize);
                                 byte[] buffer = new byte[1024];
                                 int bytesRead;
                                 while ((bytesRead = fileIn.read(buffer)) != -1) {
@@ -51,10 +56,10 @@ public class FileServer {
                                 }
                             }
                         } else {
-                            out.writeObject("not_found");
+                            out.writeUTF("not_found");
                         }
                     } else if (command.equals("upload")) {
-                        String fileName = (String) in.readObject();
+                        String fileName = in.readUTF();
                         try (OutputStream fileOut = new FileOutputStream(FILE_DIRECTORY + fileName)) {
                             byte[] buffer = new byte[1024];
                             int bytesRead;
@@ -64,7 +69,7 @@ public class FileServer {
                         }
                     }
                 }
-            } catch (IOException | ClassNotFoundException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
