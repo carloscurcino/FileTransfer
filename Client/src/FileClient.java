@@ -41,21 +41,45 @@ public class FileClient {
             listButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    listFiles();
+                    // Execute a operação de listagem em uma thread separada
+                    SwingWorker<Void, Void> listWorker = new SwingWorker<Void, Void>() {
+                        @Override
+                        protected Void doInBackground() throws Exception {
+                            listFiles();
+                            return null;
+                        }
+                    };
+                    listWorker.execute();
                 }
             });
 
             downloadButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    downloadFile();
+                    // Execute a operação de download em uma thread separada
+                    SwingWorker<Void, Void> downloadWorker = new SwingWorker<Void, Void>() {
+                        @Override
+                        protected Void doInBackground() throws Exception {
+                            downloadFile();
+                            return null;
+                        }
+                    };
+                    downloadWorker.execute();
                 }
             });
 
             uploadButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    uploadFile();
+                    // Execute a operação de upload em uma thread separada
+                    SwingWorker<Void, Void> uploadWorker = new SwingWorker<Void, Void>() {
+                        @Override
+                        protected Void doInBackground() throws Exception {
+                            uploadFile();
+                            return null;
+                        }
+                    };
+                    uploadWorker.execute();
                 }
             });
 
@@ -148,9 +172,13 @@ public class FileClient {
                 // Indique o término do envio de arquivo
                 out.writeLong(-1); // -1 para indicar o fim do arquivo
                 JOptionPane.showMessageDialog(null, "File uploaded successfully.");
+
+                // Após o upload bem-sucedido, atualize a lista de arquivos
+                listFiles();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
+
 }
