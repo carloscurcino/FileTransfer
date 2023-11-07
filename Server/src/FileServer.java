@@ -5,7 +5,7 @@ import java.util.concurrent.Executors;
 
 public class FileServer {
     private static final int PORT = 12345;
-    private static final String FILE_DIRECTORY = "C:\\Users\\carlosdaniel\\Desktop\\Code\\Facul\\Redes\\FileTransfer\\Server\\src\\arquivos_servidor\\";
+    private static final String FILE_DIRECTORY = "/home/computacao/Desktop/Code Tower/Carlos-Curcino/FileTransfer/Server/src/arquivos_servidor/";
 
     public static void main(String[] args) {
         ExecutorService executorService = Executors.newFixedThreadPool(10);
@@ -60,14 +60,24 @@ public class FileServer {
                         }
                     } else if (command.equals("upload")) {
                         String fileName = in.readUTF();
+                        long fileSize = in.readLong(); // Leia o tamanho do arquivo
+
                         try (OutputStream fileOut = new FileOutputStream(FILE_DIRECTORY + fileName)) {
                             byte[] buffer = new byte[1024];
                             int bytesRead;
-                            while ((bytesRead = in.read(buffer)) != -1) {
+                            long totalBytesRead = 0;
+                            while (totalBytesRead < fileSize) {
+                                bytesRead = in.read(buffer, 0, (int) Math.min(1024, fileSize - totalBytesRead));
+                                if (bytesRead == -1) {
+                                    break;
+                                }
                                 fileOut.write(buffer, 0, bytesRead);
+                                totalBytesRead += bytesRead;
                             }
                         }
+                        // Não é necessário mais o uso de out.writeInt(-1) ou out.writeLong(-1)
                     }
+
                 }
             } catch (IOException e) {
                 e.printStackTrace();

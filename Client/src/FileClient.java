@@ -162,6 +162,9 @@ public class FileClient {
                 out.writeUTF("upload");
                 out.writeUTF(selectedFile.getName());
 
+                // Envie o tamanho do arquivo em bytes
+                out.writeLong(selectedFile.length());
+
                 try (BufferedInputStream fileIn = new BufferedInputStream(new FileInputStream(selectedFile))) {
                     byte[] buffer = new byte[1024];
                     int bytesRead;
@@ -169,8 +172,6 @@ public class FileClient {
                         out.write(buffer, 0, bytesRead);
                     }
                 }
-                // Indique o término do envio de arquivo
-                out.writeLong(-1); // -1 para indicar o fim do arquivo
                 JOptionPane.showMessageDialog(null, "File uploaded successfully.");
 
                 // Após o upload bem-sucedido, atualize a lista de arquivos
